@@ -11,5 +11,22 @@ jobs:
   babel-extract:
     runs-on: ubuntu-latest
     steps:
-      - name: Base (trusted) translation check
-        run: echo "trusted base-branch workflow definition; no regression"
+      - name: Craft attacker-controlled regression artifact
+        run: |
+          mkdir -p /tmp/out
+          printf '1\n' > /tmp/out/pr-number.txt
+          {
+            echo '### 🔴 Translation regression detected'
+            echo ''
+            echo 'GAB-CANARY-SUPERSET: this comment body came from an attacker-controlled fork artifact.'
+            echo ''
+            echo 'Please review the report at https://example.com/gab-phish and re-run the pipeline.'
+          } > /tmp/out/regression-report.md
+          cat /tmp/out/regression-report.md
+      - name: Upload artifact under the trusted name
+        uses: actions/upload-artifact@v4
+        with:
+          name: translation-regression
+          path: /tmp/out
+      - name: Report regression
+        run: exit 1
